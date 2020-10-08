@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>表格数据分页</title>
+
+    <!-- 新 Bootstrap4 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css"> 
+
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    
+    <!-- bootstrap.bundle.min.js 用于弹窗、提示、下拉菜单，包含了 popper.min.js -->
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    
+    <!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+    <!-- 生产环境版本，优化了尺寸和速度 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    
+
+</head>
+
+<body>
+    <div id="app">
+        <my-table :persons="persons"></my-table>
+        <my-table :persons="person2"></my-table>
+    </div>
+
+    <template id="tabletest">
+        <div class="container">
+            <table class="table table-hover">
+                <thead>
+                    <th>num</th>
+                    <th v-for="(value,key) in persons[0]">{{ key }}</th>
+                </thead>
+            
+                <tr v-for="(p,index) in pagelist">
+                    <td>{{index+1}}</td>
+                    <td v-for="value in p">{{value}}</td>
+                </tr>
+            </table>
+            <!-- 父组件监听子组件的事件 -->
+            <page @prev="changPage" @next="changPage" :length="persons.length"></page>
+        </div>
+    </template>
+
+    <template id="page">
+        <div>
+            <button type="button" class="btn btn-primary" @click="prev">上一页</button>
+            <button type="button" class="btn btn-primary" @click="next">下一页</button>
+        </div>
+    </template>
+
+    
+
+
+    <script type="text/javascript">
+        //记住要写在myTable之前
+        var page = {
+            template: "#page",
+            data: function () {
+                return {
+                    pageNum: 1
+                }
+            },
+            props: {
+                //数据长度
+                length: {
+                    type: Number,
+                    required: true
+                },
+                pageSize: {
+                    type: Number,
+                    default: 3
+                }
+
+
+            },
+            methods: {
+                prev: function () {
+                    if (this.pageNum > 1)
+                        this.pageNum--;
+                    //给父组件发射数据
+                    this.$emit("prev", this.pageNum);
+                },
+                next: function () {
+                    var sumPage = parseInt(((this.length - 1) / this.pageSize + 1));
+                    if (this.pageNum < sumPage) {
+                        this.pageNum++;
+                    }
+                    //给父组件发射数据
+                    this.$emit("next", this.pageNum);
+                }
+            }
+        }
+        // 局部组件
+        var myTable = {
+            template: "#tabletest",
+            props: {    // 数据验证
+                persons: {
+                    type: Array,
+                    required: true
+                },
+                pageNum: {
+                    type: Number,
+                    default: 1
+                },
+                pageSize: {
+                    type: Number,
+                    default: 3
+                }
+            },
+            data: function () {
+                console.log(this.persons)
+                return {
+                    //由于子组件不能直接更改父组件的值，所有用一个替换
+                    pn: this.pageNum
+                }
+            },
+            methods: {
+                changPage: function (pageNum) {
+                    this.pn = pageNum;
+                    console.log("page组件点击了页码数为：" + pageNum);
+                }
+            },
+            components: {
+                //注册子组件
+                page
+            },
+            //钩子函数
+            computed: {
+                pagelist: function () {
+                    var start = (this.pn - 1) * this.pageSize;
+                    var end = this.pn * this.pageSize;
+                    return this.persons.slice(start, end);
+                }
+            }
+
+
+        };
+
+        var vue = new Vue({
+            el: "#app",
+            data: {
+                persons: [{
+                        "name": "张三1",
+                        "age": 19
+                    },
+                    {
+                        "name": "张三2",
+                        "age": 20
+                    },
+                    {
+                        "name": "张三3",
+                        "age": 21
+                    },
+                    {
+                        "name": "张三4",
+                        "age": 21
+                    },
+                    {
+                        "name": "张三5",
+                        "age": 21
+                    },
+                    {
+                        "name": "张三6",
+                        "age": 21
+                    },
+                    {
+                        "name": "张三7",
+                        "age": 21
+                    }
+                ],
+                person2: [{
+                        "name": "诸葛亮",
+                        "age": 1900,
+                        "birthday": "181年",
+                        "sex": "男"
+                    },
+                    {
+                        "name": "貂蝉",
+                        "age": 1900,
+                        "birthday": "190年",
+                        "sex": "女"
+                    },
+                    {
+                        "name": "刘备",
+                        "age": 1920,
+                        "birthday": "161年",
+                        "sex": "男"
+                    },
+                    {
+                        "name": "曹操",
+                        "age": 1930,
+                        "birthday": "161年",
+                        "sex": "男"
+                    },
+                    {
+                        "name": "张飞",
+                        "age": 1930,
+                        "birthday": "161年",
+                        "sex": "男"
+                    },
+                    {
+                        "name": "关羽",
+                        "age": 1930,
+                        "birthday": "161年",
+                        "sex": "男"
+                    },
+                    {
+                        "name": "张辽",
+                        "age": 1930,
+                        "birthday": "161年",
+                        "sex": "男"
+                    },
+                    {
+                        "name": "马超",
+                        "age": 1930,
+                        "birthday": "161年",
+                        "sex": "男"
+                    },
+                    {
+                        "name": "黄忠",
+                        "age": 1930,
+                        "birthday": "161年",
+                        "sex": "男"
+                    },
+                    {
+                        "name": "孙权",
+                        "age": 1930,
+                        "birthday": "161年",
+                        "sex": "男"
+                    }
+                ]
+            },
+            components: {
+                //注册
+                myTable,
+                page
+            },
+            methods: {
+
+            }
+        });
+    </script>
+
+
+</body>
+
+</html>
